@@ -16,32 +16,6 @@ public class BlockController : MonoBehaviour
         phase = Random.value * Mathf.PI * 2f; // random start, looks natural
     }
 
-    // void Update()
-    // {
-    //     if (StackGameManager.InputLocked) return;
-
-    //     if (Time.timeScale == 0f) return;
-
-    //     if (!isMoving) return;
-
-    //     // advance phase using deltaTime (KEY FIX)
-    //     phase += moveSpeed * Time.deltaTime;
-
-    //     float t = (Mathf.Sin(phase) + 1f) * 0.5f;
-    //     float x = Mathf.Lerp(minX, maxX, t);
-
-    //     transform.position = new Vector3(
-    //         x,
-    //         transform.position.y,
-    //         transform.position.z
-    //     );
-
-    //     if (Input.GetMouseButtonDown(0))
-    //     {
-    //         StopBlock();
-    //     }
-    // }
-
     void Update()
     {
         // 1️⃣ Global input lock (pause, resume, UI)
@@ -73,6 +47,7 @@ public class BlockController : MonoBehaviour
             //     UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             //     return;
             if (UnityEngine.EventSystems.EventSystem.current != null &&
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject() &&
                 UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
                 return;
 

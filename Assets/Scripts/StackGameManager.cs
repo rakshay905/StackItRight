@@ -60,7 +60,6 @@ public class StackGameManager : MonoBehaviour
     Color onColor = new Color(0.2f, 0.8f, 0.2f);   // green
     Color offColor = new Color(0.85f, 0.2f, 0.2f); // red
 
-
     public static bool InputLocked = false;
 
     public TextMeshProUGUI bestScoreText;
@@ -69,6 +68,9 @@ public class StackGameManager : MonoBehaviour
 
     Vector3 scoreBaseScale;
     bool scoreAnimating = false;
+
+    public GameObject watchAdButton;   // invisible button
+    public GameObject restartButton;
 
     void Awake()
     {
@@ -229,11 +231,14 @@ public class StackGameManager : MonoBehaviour
 
         if (!hasContinued)
         {
+            watchAdButton.SetActive(true);
+            restartButton.SetActive(false);
+
             gameOverText.text =
                 "GAME OVER\n\n" +
                 "SCORE: " + score + "\n" +
-                "BEST: " + highScore + "\n\n" +
-                "Watch Ad to Continue";
+                "BEST: " + highScore + "\n";
+                // "Watch Ad to Continue";
         }
         else
         {
@@ -279,17 +284,17 @@ public class StackGameManager : MonoBehaviour
             Destroy(currentMovingBlock.GetComponent<BlockController>());
         }
 
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (!hasContinued)
-            {
-                ShowRewardedAd();
-            }
-            else
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            }
-        }
+        // if (Input.GetMouseButtonDown(0))
+        // {
+        //     if (!hasContinued)
+        //     {
+        //         ShowRewardedAd();
+        //     }
+        //     else
+        //     {
+        //         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        //     }
+        // }
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
@@ -309,7 +314,7 @@ public class StackGameManager : MonoBehaviour
     //     gameOverText.gameObject.SetActive(true);
     // }
 
-    void FinalGameOver()
+    public void FinalGameOver()
     {
         isGameOver = true;
         gameOverPanel.SetActive(true);
@@ -321,28 +326,50 @@ public class StackGameManager : MonoBehaviour
         // 🔥 ENSURE UPDATED
         UpdateHighScore();
 
+        watchAdButton.SetActive(false);
+        restartButton.SetActive(true);
         gameOverText.text =
             "GAME OVER\n\n" +
             "SCORE: " + score + "\n" +
             (newBest ? "\nNEW BEST!\n\n" : "") +
-            "BEST: " + highScore + "\n\n" +
-            "Tap to Restart";
+            "BEST: " + highScore + "\n";
+            // "Tap to Restart";
+
+        // AdMobManager.Instance.TryShowInterstitial();
+        StartCoroutine(ShowInterstitialDelayed());
     }
 
-
-    void ShowRewardedAd()
+    IEnumerator ShowInterstitialDelayed()
     {
-        Debug.Log("Showing rewarded ad...");
-
-        // TEMP: simulate ad success
-        Invoke(nameof(OnRewardedAdSuccess), 1.5f);
+        yield return new WaitForSecondsRealtime(0.2f);
+        AdMobManager.Instance.TryShowInterstitial();
     }
 
-    // void OnRewardedAdSuccess()
+
+
+    // void ShowRewardedAd()
+    // {
+    //     Debug.Log("Showing rewarded ad...");
+
+    //     // TEMP: simulate ad success
+    //     Invoke(nameof(OnRewardedAdSuccess), 1.5f);
+    // }
+
+    public void ShowRewardedAd()
+    {
+        InputLocked = true; // 🔒 stop any double input
+        AdMobManager.Instance.ShowRewardedAd();
+    }
+
+    // public void OnRewardedAdSuccess()
     // {
     //     hasContinued = true;
     //     isGameOver = false;
-    //     gameOverText.gameObject.SetActive(false);
+
+    //     // 🔥 HIDE GAME OVER UI
+    //     gameOverPanel.SetActive(false);
+    //     // pauseButton.SetActive(true); // 🔥 BACK TO GAME
+    //     topRightButtons.SetActive(true);
 
     //     // 🔥 DESTROY FAILED MOVING BLOCK
     //     if (currentMovingBlock != null)
@@ -351,48 +378,49 @@ public class StackGameManager : MonoBehaviour
     //         currentMovingBlock = null;
     //     }
 
-    //     // Restore correct reference
+    //     // 🔥 RESTORE LAST SAFE BLOCK
     //     lastBlock = lastSafeBlock;
 
-    //     // Update camera
+    //     // 🔥 UPDATE CAMERA
     //     cameraFollow.SetTarget(lastBlock.transform);
 
-    //     // Spawn ONLY ONE fresh block
+    //     // 🔥 SPAWN ONE NEW BLOCK ONLY
     //     SpawnNewBlock();
+
+    //     scoreText.text = "Score: " + score.ToString();
+    //     bestScoreText.text = "Best: " + highScore;
+
     // }
 
-    void OnRewardedAdSuccess()
+    public void OnRewardedAdSuccess()
     {
         hasContinued = true;
-        isGameOver = false;
 
-        // 🔥 HIDE GAME OVER UI
+        isGameOver = false;
+        InputLocked = false;
+
         gameOverPanel.SetActive(false);
-        // pauseButton.SetActive(true); // 🔥 BACK TO GAME
         topRightButtons.SetActive(true);
 
-        // 🔥 DESTROY FAILED MOVING BLOCK
+        // 🔥 Destroy failed moving block (if any)
         if (currentMovingBlock != null)
         {
             Destroy(currentMovingBlock);
             currentMovingBlock = null;
         }
 
-        // 🔥 RESTORE LAST SAFE BLOCK
+        // 🔥 Restore last safe block
         lastBlock = lastSafeBlock;
 
-        // 🔥 UPDATE CAMERA
+        // 🔥 Update camera
         cameraFollow.SetTarget(lastBlock.transform);
 
-        // 🔥 SPAWN ONE NEW BLOCK ONLY
+        // 🔥 VERY IMPORTANT
+        Time.timeScale = 1f;
+
+        // 🔥 Spawn a fresh moving block
         SpawnNewBlock();
-
-        scoreText.text = "Score: " + score.ToString();
-        bestScoreText.text = "Best: " + highScore;
-
     }
-
-
 
     void UpdateBackgroundColor()
     {
