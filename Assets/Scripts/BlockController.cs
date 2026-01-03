@@ -69,8 +69,11 @@ public class BlockController : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             // 🚫 Ignore UI clicks
+            // if (UnityEngine.EventSystems.EventSystem.current != null &&
+            //     UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            //     return;
             if (UnityEngine.EventSystems.EventSystem.current != null &&
-                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
                 return;
 
             StopBlock();
