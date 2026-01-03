@@ -2,7 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
 using System.Collections;
-
+using UnityEngine.UI;
 
 public class StackGameManager : MonoBehaviour
 {
@@ -47,7 +47,19 @@ public class StackGameManager : MonoBehaviour
 
     public GameObject pausePanel;
 
+    // public GameObject pauseButton;
+    public GameObject topRightButtons;   // parent
     public GameObject pauseButton;
+    public GameObject settingsButton;
+
+    public TextMeshProUGUI soundText;
+    public TextMeshProUGUI vibrationText;
+    public Button soundButton;
+    public Button vibrationButton;
+
+    Color onColor = new Color(0.2f, 0.8f, 0.2f);   // green
+    Color offColor = new Color(0.85f, 0.2f, 0.2f); // red
+
 
     public static bool InputLocked = false;
 
@@ -70,7 +82,10 @@ public class StackGameManager : MonoBehaviour
         gameOverCanvasGroup.alpha = 0;
         gameOverPanel.SetActive(false);
 
-        pauseButton.SetActive(true);
+        UpdateAudioUI();
+
+        // pauseButton.SetActive(true);
+        topRightButtons.SetActive(true);
 
         scoreBaseScale = scoreText.transform.localScale;
 
@@ -202,7 +217,8 @@ public class StackGameManager : MonoBehaviour
     void GameOver()
     {
         isGameOver = true;
-        pauseButton.SetActive(false);
+        // pauseButton.SetActive(false);
+        topRightButtons.SetActive(false);
 
         // gameOverPanel.SetActive(true);
         StartCoroutine(ShowGameOverPanel());
@@ -296,7 +312,8 @@ public class StackGameManager : MonoBehaviour
     {
         isGameOver = true;
         gameOverPanel.SetActive(true);
-        pauseButton.SetActive(false);
+        // pauseButton.SetActive(false);
+        topRightButtons.SetActive(false);
 
         bool newBest = score >= highScore;
 
@@ -350,7 +367,8 @@ public class StackGameManager : MonoBehaviour
 
         // 🔥 HIDE GAME OVER UI
         gameOverPanel.SetActive(false);
-        pauseButton.SetActive(true); // 🔥 BACK TO GAME
+        // pauseButton.SetActive(true); // 🔥 BACK TO GAME
+        topRightButtons.SetActive(true);
 
         // 🔥 DESTROY FAILED MOVING BLOCK
         if (currentMovingBlock != null)
@@ -403,7 +421,8 @@ public class StackGameManager : MonoBehaviour
 
         isPaused = !isPaused;
         pausePanel.SetActive(isPaused);
-        pauseButton.SetActive(!isPaused); // 🔥 HIDE WHEN PAUSED
+        // pauseButton.SetActive(!isPaused); // 🔥 HIDE WHEN PAUSED
+        topRightButtons.SetActive(!isPaused); // 🔥 hide both buttons
         Time.timeScale = isPaused ? 0f : 1f;
 
         // unlock input after a short delay
@@ -421,7 +440,8 @@ public class StackGameManager : MonoBehaviour
         isPaused = false;
         AudioManager.Instance.Play(AudioManager.Instance.buttonClip);
         pausePanel.SetActive(false);
-        pauseButton.SetActive(true); // 🔥 SHOW AGAIN
+        // pauseButton.SetActive(true); // 🔥 SHOW AGAIN
+        topRightButtons.SetActive(true); // 🔥 show again
         Time.timeScale = 1f;
     }
 
@@ -510,5 +530,54 @@ public class StackGameManager : MonoBehaviour
         scoreText.transform.localScale = startScale;
         scoreAnimating = false;
     }
+
+    public void OpenSettings()
+    {
+        if (isGameOver) return;
+
+        InputLocked = true;
+
+        isPaused = true;
+        Time.timeScale = 0f;
+
+        pausePanel.SetActive(true);
+        topRightButtons.SetActive(false);
+
+        StartCoroutine(UnlockInput());
+    }
+
+    void UpdateAudioUI()
+    {
+        // SOUND
+        bool soundOn = AudioManager.Instance.soundOn;
+        soundText.text = "Sound: " + (soundOn ? "ON" : "OFF");
+        soundButton.image.color = soundOn ? onColor : offColor;
+
+        // VIBRATION
+        bool vibrationOn = AudioManager.Instance.vibrationOn;
+        vibrationText.text = "Vibration: " + (vibrationOn ? "ON" : "OFF");
+        vibrationButton.image.color = vibrationOn ? onColor : offColor;
+    }
+
+    public void OnSoundButton()
+    {
+        AudioManager.Instance.soundOn = !AudioManager.Instance.soundOn;
+        PlayerPrefs.SetInt("SOUND_ON", AudioManager.Instance.soundOn ? 1 : 0);
+        PlayerPrefs.Save();
+
+        UpdateAudioUI();
+        AudioManager.Instance.Play(AudioManager.Instance.buttonClip);
+    }
+
+    public void OnVibrationButton()
+    {
+        AudioManager.Instance.vibrationOn = !AudioManager.Instance.vibrationOn;
+        PlayerPrefs.SetInt("VIBRATION_ON", AudioManager.Instance.vibrationOn ? 1 : 0);
+        PlayerPrefs.Save();
+
+        UpdateAudioUI();
+        AudioManager.Instance.Vibrate();
+    }
+
 
 }
