@@ -168,7 +168,8 @@ public class StackGameManager : MonoBehaviour
 
         lastSafeBlock = currentBlock;
 
-        SpawnNewBlock();
+        // SpawnNewBlock();
+        StartCoroutine(SpawnNextBlockDelayed());
     }
 
     void SpawnNewBlock()
@@ -231,8 +232,12 @@ public class StackGameManager : MonoBehaviour
 
         if (!hasContinued)
         {
-            watchAdButton.SetActive(true);
-            restartButton.SetActive(false);
+            // watchAdButton.SetActive(true);
+            // restartButton.SetActive(false);
+            bool rewardedReady = AdMobManager.Instance.IsRewardedReady();
+
+            watchAdButton.SetActive(rewardedReady);
+            restartButton.SetActive(!rewardedReady);
 
             gameOverText.text =
                 "GAME OVER\n\n" +
@@ -357,6 +362,9 @@ public class StackGameManager : MonoBehaviour
 
     public void ShowRewardedAd()
     {
+        if (!AdMobManager.Instance.IsRewardedReady())
+        return;
+
         InputLocked = true; // 🔒 stop any double input
         AdMobManager.Instance.ShowRewardedAd();
     }
@@ -608,5 +616,10 @@ public class StackGameManager : MonoBehaviour
         AudioManager.Instance.Vibrate();
     }
 
+    IEnumerator SpawnNextBlockDelayed()
+    {
+        yield return new WaitForSeconds(0.12f);
+        SpawnNewBlock();
+    }
 
 }

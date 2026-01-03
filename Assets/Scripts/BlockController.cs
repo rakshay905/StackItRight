@@ -2,7 +2,10 @@ using UnityEngine;
 
 public class BlockController : MonoBehaviour
 {
-    public float moveSpeed = 1f; // THIS NOW REALLY CONTROLS SPEED
+    public float moveSpeed = 1f;
+    public float minSpeed = 0.6f;
+    public float maxSpeed = 2.2f;
+
 
     private bool isMoving = true;
     private float minX;
@@ -28,7 +31,9 @@ public class BlockController : MonoBehaviour
         if (!isMoving) return;
 
         // 4️⃣ Movement
-        phase += moveSpeed * Time.deltaTime;
+        // phase += moveSpeed * Time.deltaTime;
+        float speed = Mathf.Clamp(moveSpeed, minSpeed, maxSpeed);
+        phase += speed * Time.deltaTime;
 
         float t = (Mathf.Sin(phase) + 1f) * 0.5f;
         float x = Mathf.Lerp(minX, maxX, t);

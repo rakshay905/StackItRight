@@ -5,13 +5,20 @@ public class AdMobManager : MonoBehaviour
 {
     public static AdMobManager Instance;
 
-    // Google TEST rewarded ad unit ID (Android)
-    private string rewardedAdUnitId = "ca-app-pub-3940256099942544/5224354917";
+    #if UNITY_EDITOR
+        private string rewardedAdUnitId = "ca-app-pub-3940256099942544/5224354917";
+        private string interstitialAdUnitId = "ca-app-pub-3940256099942544/1033173712";
+    #else
+        private string rewardedAdUnitId = "ca-app-pub-4847526487101723/9931325676";
+        private string interstitialAdUnitId = "ca-app-pub-4847526487101723/4539398194";
+    #endif
 
+    // Google TEST rewarded ad unit ID (Android)
+    // private string rewardedAdUnitId = "ca-app-pub-3940256099942544/5224354917";
     private RewardedAd rewardedAd;
 
     // ---------------- INTERSTITIAL (NEW) ----------------
-    private string interstitialAdUnitId = "ca-app-pub-3940256099942544/1033173712";
+    // private string interstitialAdUnitId = "ca-app-pub-3940256099942544/1033173712";
     private InterstitialAd interstitialAd;
 
     private int gameOverCount = 0;
@@ -144,5 +151,9 @@ public class AdMobManager : MonoBehaviour
         }
     }
 
+    public bool IsRewardedReady()
+    {
+        return rewardedAd != null && rewardedAd.CanShowAd();
+    }
 
 }
