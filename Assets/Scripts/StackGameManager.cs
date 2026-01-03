@@ -108,7 +108,7 @@ public class StackGameManager : MonoBehaviour
                 currentBlock.transform.position.y,
                 currentBlock.transform.position.z
             );
-            AddScore(3);
+            AddScore(30);
             Handheld.Vibrate();
             AudioManager.Instance.Play(AudioManager.Instance.perfectClip);
 
@@ -118,7 +118,7 @@ public class StackGameManager : MonoBehaviour
         }
         else if (overlap > 0)
         {
-            AddScore(1);
+            AddScore(10);
             AudioManager.Instance.Play(AudioManager.Instance.placeClip);
         }
         else
