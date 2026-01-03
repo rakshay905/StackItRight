@@ -124,7 +124,8 @@ public class StackGameManager : MonoBehaviour
                 currentBlock.transform.position.z
             );
             AddScore(30);
-            Handheld.Vibrate();
+            bool vibrationOn = AudioManager.Instance.vibrationOn;
+            if (vibrationOn) Handheld.Vibrate();
             AudioManager.Instance.Play(AudioManager.Instance.perfectClip);
 
             currentBlock.transform.localScale += Vector3.up * 0.1f;
