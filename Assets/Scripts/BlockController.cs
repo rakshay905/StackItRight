@@ -13,11 +13,28 @@ public class BlockController : MonoBehaviour
 
     private float phase; // our own time accumulator
 
+    float direction = 1f; // +1 = right, -1 = left
+
+    // void Start()
+    // {
+    //     CalculateBounds();
+    //     phase = Random.value * Mathf.PI * 2f; // random start, looks natural
+    // }
+
     void Start()
     {
         CalculateBounds();
-        phase = Random.value * Mathf.PI * 2f; // random start, looks natural
+
+        // Normalize current X position into 0–1 range
+        float t = Mathf.InverseLerp(minX, maxX, transform.position.x);
+
+        // Convert t into phase so sin(phase) maps correctly
+        phase = Mathf.Asin(t * 2f - 1f);
+
+        // decide initial direction
+        direction = Random.value > 0.5f ? 1f : -1f;
     }
+
 
     void Update()
     {
@@ -33,7 +50,8 @@ public class BlockController : MonoBehaviour
         // 4️⃣ Movement
         // phase += moveSpeed * Time.deltaTime;
         float speed = Mathf.Clamp(moveSpeed, minSpeed, maxSpeed);
-        phase += speed * Time.deltaTime;
+        // phase += speed * Time.deltaTime;
+        phase += speed * direction * Time.deltaTime;
 
         float t = (Mathf.Sin(phase) + 1f) * 0.5f;
         float x = Mathf.Lerp(minX, maxX, t);
