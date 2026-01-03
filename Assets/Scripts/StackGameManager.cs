@@ -51,6 +51,11 @@ public class StackGameManager : MonoBehaviour
 
     public TextMeshProUGUI bestScoreText;
 
+    CanvasGroup gameOverCanvasGroup;
+
+    Vector3 scoreBaseScale;
+    bool scoreAnimating = false;
+
     void Awake()
     {
         Instance = this;
@@ -58,6 +63,13 @@ public class StackGameManager : MonoBehaviour
 
     void Start()
     {
+        gameOverCanvasGroup = gameOverPanel.GetComponent<CanvasGroup>();
+        gameOverPanel.transform.localScale = Vector3.one * 0.9f;
+        gameOverCanvasGroup.alpha = 0;
+        gameOverPanel.SetActive(false);
+
+        scoreBaseScale = scoreText.transform.localScale;
+
         gameOverPanel.SetActive(false);
 
         mainCamera.backgroundColor = backgroundColors[0];
@@ -183,7 +195,8 @@ public class StackGameManager : MonoBehaviour
     {
         isGameOver = true;
 
-        gameOverPanel.SetActive(true);
+        // gameOverPanel.SetActive(true);
+        StartCoroutine(ShowGameOverPanel());
 
         // 🔥 UPDATE & SAVE FIRST
         UpdateHighScore();
@@ -207,6 +220,8 @@ public class StackGameManager : MonoBehaviour
     {
         score += value;
         scoreText.text = "Score: " + score.ToString();
+
+        StartCoroutine(ScorePop());
 
         if (score % 5 == 0)
         {
@@ -414,6 +429,70 @@ public class StackGameManager : MonoBehaviour
         }
     }
 
+    IEnumerator ShowGameOverPanel()
+    {
+        gameOverPanel.SetActive(true);
 
+        float t = 0f;
+        float duration = 0.25f;
+
+        Vector3 startScale = Vector3.one * 0.9f;
+        Vector3 endScale = Vector3.one;
+
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = t / duration;
+
+            gameOverCanvasGroup.alpha = Mathf.Lerp(0, 1, p);
+            gameOverPanel.transform.localScale = Vector3.Lerp(startScale, endScale, p);
+
+            yield return null;
+        }
+
+        gameOverCanvasGroup.alpha = 1;
+        gameOverPanel.transform.localScale = endScale;
+    }
+
+    IEnumerator ScorePop()
+    {
+        if (scoreAnimating) yield break;
+        scoreAnimating = true;
+
+        float growTime = 0.12f;
+        float shrinkTime = 0.15f;
+
+        Vector3 startScale = scoreBaseScale;
+        Vector3 peakScale = scoreBaseScale * 1.12f;
+
+        float t = 0f;
+
+        // 🔹 GROW (ease out)
+        while (t < growTime)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / growTime);
+            p = Mathf.Sin(p * Mathf.PI * 0.5f); // ease-out
+
+            scoreText.transform.localScale = Vector3.Lerp(startScale, peakScale, p);
+            yield return null;
+        }
+
+        t = 0f;
+
+        // 🔹 SHRINK BACK (ease in)
+        while (t < shrinkTime)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / shrinkTime);
+            p = 1f - Mathf.Cos(p * Mathf.PI * 0.5f); // ease-in
+
+            scoreText.transform.localScale = Vector3.Lerp(peakScale, startScale, p);
+            yield return null;
+        }
+
+        scoreText.transform.localScale = startScale;
+        scoreAnimating = false;
+    }
 
 }
