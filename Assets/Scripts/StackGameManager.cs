@@ -47,6 +47,8 @@ public class StackGameManager : MonoBehaviour
 
     public GameObject pausePanel;
 
+    public GameObject pauseButton;
+
     public static bool InputLocked = false;
 
     public TextMeshProUGUI bestScoreText;
@@ -67,6 +69,8 @@ public class StackGameManager : MonoBehaviour
         gameOverPanel.transform.localScale = Vector3.one * 0.9f;
         gameOverCanvasGroup.alpha = 0;
         gameOverPanel.SetActive(false);
+
+        pauseButton.SetActive(true);
 
         scoreBaseScale = scoreText.transform.localScale;
 
@@ -105,6 +109,8 @@ public class StackGameManager : MonoBehaviour
                 currentBlock.transform.position.z
             );
             AddScore(3);
+            Handheld.Vibrate();
+            AudioManager.Instance.Play(AudioManager.Instance.perfectClip);
 
             currentBlock.transform.localScale += Vector3.up * 0.1f;
             Invoke(nameof(ResetScale), 0.1f);
@@ -113,10 +119,12 @@ public class StackGameManager : MonoBehaviour
         else if (overlap > 0)
         {
             AddScore(1);
+            AudioManager.Instance.Play(AudioManager.Instance.placeClip);
         }
         else
         {
             GameOver();
+            AudioManager.Instance.Play(AudioManager.Instance.failClip);
             return;
         }
 
@@ -194,6 +202,7 @@ public class StackGameManager : MonoBehaviour
     void GameOver()
     {
         isGameOver = true;
+        pauseButton.SetActive(false);
 
         // gameOverPanel.SetActive(true);
         StartCoroutine(ShowGameOverPanel());
@@ -287,6 +296,7 @@ public class StackGameManager : MonoBehaviour
     {
         isGameOver = true;
         gameOverPanel.SetActive(true);
+        pauseButton.SetActive(false);
 
         bool newBest = score >= highScore;
 
@@ -340,6 +350,7 @@ public class StackGameManager : MonoBehaviour
 
         // 🔥 HIDE GAME OVER UI
         gameOverPanel.SetActive(false);
+        pauseButton.SetActive(true); // 🔥 BACK TO GAME
 
         // 🔥 DESTROY FAILED MOVING BLOCK
         if (currentMovingBlock != null)
@@ -386,11 +397,13 @@ public class StackGameManager : MonoBehaviour
     public void TogglePause()
     {
         if (isGameOver) return;
+        AudioManager.Instance.Play(AudioManager.Instance.buttonClip);
 
         InputLocked = true;   // 🔒 lock input immediately
 
         isPaused = !isPaused;
         pausePanel.SetActive(isPaused);
+        pauseButton.SetActive(!isPaused); // 🔥 HIDE WHEN PAUSED
         Time.timeScale = isPaused ? 0f : 1f;
 
         // unlock input after a short delay
@@ -406,13 +419,16 @@ public class StackGameManager : MonoBehaviour
     public void ResumeGame()
     {
         isPaused = false;
+        AudioManager.Instance.Play(AudioManager.Instance.buttonClip);
         pausePanel.SetActive(false);
+        pauseButton.SetActive(true); // 🔥 SHOW AGAIN
         Time.timeScale = 1f;
     }
 
     public void RestartGame()
     {
         Time.timeScale = 1f;
+        AudioManager.Instance.Play(AudioManager.Instance.buttonClip);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
