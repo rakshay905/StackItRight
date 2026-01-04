@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "516109655070",
+    "project_id": "stack-it-right",
+    "storage_bucket": "stack-it-right.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:516109655070:android:81a67fe913d203e164a20f",
+        "android_client_info": {
+          "package_name": "com.qualwiztech.stackitright"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATr2zSanhvNmbjNHjTuAaL0k5LeClgwqA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
