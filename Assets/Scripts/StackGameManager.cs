@@ -79,6 +79,7 @@ public class StackGameManager : MonoBehaviour
 
     void Start()
     {
+        UpdateBackgroundColor();
         gameOverCanvasGroup = gameOverPanel.GetComponent<CanvasGroup>();
         gameOverPanel.transform.localScale = Vector3.one * 0.9f;
         gameOverCanvasGroup.alpha = 0;
@@ -93,11 +94,11 @@ public class StackGameManager : MonoBehaviour
 
         gameOverPanel.SetActive(false);
 
-        mainCamera.backgroundColor = backgroundColors[0];
+        // mainCamera.backgroundColor = backgroundColors[0];
 
         highScore = PlayerPrefs.GetInt("HIGH_SCORE", 0);
 
-        bestScoreText.text = "Best: " + highScore;
+        bestScoreText.text = "Best: "  + FormatScore(highScore);
         scoreText.text = "Score: 0";
 
         lastBlock = GameObject.Find("BaseBlock");
@@ -241,8 +242,8 @@ public class StackGameManager : MonoBehaviour
 
             gameOverText.text =
                 "GAME OVER\n\n" +
-                "SCORE: " + score + "\n" +
-                "BEST: " + highScore + "\n";
+                "SCORE: " + FormatScore(score) + "\n" +
+                "BEST: "  + FormatScore(highScore) + "\n";
                 // "Watch Ad to Continue";
         }
         else
@@ -255,14 +256,14 @@ public class StackGameManager : MonoBehaviour
     void AddScore(int value)
     {
         score += value;
-        scoreText.text = "Score: " + score.ToString();
+        scoreText.text = "Score: " + FormatScore(score);
 
         StartCoroutine(ScorePop());
 
-        if (score % 5 == 0)
-        {
-            UpdateBackgroundColor();
-        }
+        // if (score % 5 == 0)
+        // {
+        //     UpdateBackgroundColor();
+        // }
 
         if (score > highScore)
         {
@@ -270,7 +271,7 @@ public class StackGameManager : MonoBehaviour
             highScore = score;
             PlayerPrefs.SetInt("HIGH_SCORE", highScore);
             PlayerPrefs.Save();
-            bestScoreText.text = "Best: " + highScore;
+            bestScoreText.text = "Best: "  + FormatScore(highScore);
         }
 
     }
@@ -337,7 +338,7 @@ public class StackGameManager : MonoBehaviour
             "GAME OVER\n\n" +
             "SCORE: " + score + "\n" +
             (newBest ? "\nNEW BEST!\n\n" : "") +
-            "BEST: " + highScore + "\n";
+            "BEST: "  + FormatScore(highScore) + "\n";
             // "Tap to Restart";
 
         // AdMobManager.Instance.TryShowInterstitial();
@@ -395,8 +396,8 @@ public class StackGameManager : MonoBehaviour
     //     // 🔥 SPAWN ONE NEW BLOCK ONLY
     //     SpawnNewBlock();
 
-    //     scoreText.text = "Score: " + score.ToString();
-    //     bestScoreText.text = "Best: " + highScore;
+    //     scoreText.text = "Score: " + FormatScore(score);
+    //     bestScoreText.text = "Best: "  + FormatScore(highScore);
 
     // }
 
@@ -430,15 +431,24 @@ public class StackGameManager : MonoBehaviour
         SpawnNewBlock();
     }
 
+    // void UpdateBackgroundColor()
+    // {
+    //     colorIndex++;
+
+    //     if (colorIndex >= backgroundColors.Length)
+    //         colorIndex = 0;
+
+    //     mainCamera.backgroundColor = backgroundColors[colorIndex];
+    // }
     void UpdateBackgroundColor()
     {
-        colorIndex++;
+        if (backgroundColors.Length == 0) return;
 
-        if (colorIndex >= backgroundColors.Length)
-            colorIndex = 0;
-
-        mainCamera.backgroundColor = backgroundColors[colorIndex];
+        int index = Random.Range(0, backgroundColors.Length);
+        mainCamera.backgroundColor = backgroundColors[index];
     }
+
+
 
     void ResetScale()
     {
@@ -451,6 +461,8 @@ public class StackGameManager : MonoBehaviour
 
     public void TogglePause()
     {
+        InputLocked = true; // 🔥 ADD THIS FIRST
+
         if (isGameOver) return;
         AudioManager.Instance.Play(AudioManager.Instance.buttonClip);
 
@@ -484,6 +496,7 @@ public class StackGameManager : MonoBehaviour
 
     public void RestartGame()
     {
+        UpdateBackgroundColor();
         Time.timeScale = 1f;
         AudioManager.Instance.Play(AudioManager.Instance.buttonClip);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -498,7 +511,7 @@ public class StackGameManager : MonoBehaviour
             PlayerPrefs.Save();
 
             // 🔥 update top UI instantly
-            bestScoreText.text = "Best: " + highScore;
+            bestScoreText.text = "Best: "  + FormatScore(highScore);
         }
     }
 
@@ -620,6 +633,31 @@ public class StackGameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(0.12f);
         SpawnNewBlock();
+    }
+
+    string FormatScore(int value)
+    {
+        if (value < 1000)
+            return value.ToString();
+
+        if (value < 10000)
+        {
+            float v = Mathf.Floor(value / 10f) / 100f; // 🔥 1020 → 1.02
+            return v.ToString("0.##") + "k";
+        }
+
+        if (value < 100000)
+            return Mathf.Floor(value / 100f).ToString("0.#") + "k";
+
+        if (value < 1000000)
+            return (value / 1000).ToString() + "k";
+
+        return (value / 1000000f).ToString("0.##") + "M";
+    }
+
+    public void LockInputImmediately()
+    {
+        InputLocked = true;
     }
 
 }
